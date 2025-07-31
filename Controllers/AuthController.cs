@@ -13,10 +13,12 @@ namespace TaskFlow.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly TokenService _tokenService;
 
-        public AuthController(DataContext context)
+        public AuthController(DataContext context, TokenService tokenService)
         {
             _context = context;
+            _tokenService = tokenService;
         }
 
         [HttpPost("register")]
@@ -51,7 +53,9 @@ namespace TaskFlow.API.Controllers
             if (!AuthHelper.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
                 return BadRequest("Invalid password.");
 
-            return Ok("Login successful (Token will be added)");
+            var token = _tokenService.CreateToken(user);
+
+            return Ok(new {token});
         }
     }
 }
