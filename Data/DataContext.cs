@@ -12,5 +12,7 @@ namespace TaskFlow.API.Data
         }
 
         public DbSet<User> Users { get; set; }
+
+        public DbSet<TaskItem> Tasks { get; set; }
     }
 }

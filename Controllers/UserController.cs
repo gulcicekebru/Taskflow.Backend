@@ -19,5 +19,17 @@ namespace TaskFlow.API.Controllers
             });
            
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-profile")]
+        public IActionResult GetAdminProfile()
+        {
+            var username = User.Identity?.Name;
+            return Ok(new
+            {
+                message = $"Welcome, {username}! 🎉",
+                access = "You are authenticated ✅"
+            });
+        }
     }
 }

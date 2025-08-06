@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
         ValidateIssuer = false,
         ValidateAudience = false
     };
@@ -60,6 +60,14 @@ builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(build
 
 
 var app = builder.Build();
+
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    DbSeeder.SeedAdminUser(context);
+}
 
 if (app.Environment.IsDevelopment())
 {
