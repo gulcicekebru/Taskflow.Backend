@@ -3,6 +3,9 @@ using TaskFlow.API.Models;
 using TaskFlow.API.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using TaskFlow.API.Services;
+using System.Security.Claims;
 
 namespace TaskFlow.API.Controllers
 {
@@ -22,6 +25,18 @@ namespace TaskFlow.API.Controllers
         public async Task<ActionResult<List<TaskItem>>> GetTasks()
         {
             var tasks = await _context.Tasks.ToListAsync();
+            return Ok(tasks);
+        }
+
+        [HttpGet("my/")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<List<TaskItem>>> GetMyTasks()
+        {
+            var assignee = User.FindFirst(ClaimTypes.Name)?.Value;
+            var tasks = await _context.Tasks.Where(t=> t.AssignedPerson == assignee).ToListAsync();
+
+            if (!tasks.Any()) { return NotFound(); }
+
             return Ok(tasks);
         }
 
@@ -46,7 +61,7 @@ namespace TaskFlow.API.Controllers
             return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("id/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateTask(int id, [FromBody] TaskItem updatedTask)
         {
@@ -65,6 +80,26 @@ namespace TaskFlow.API.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}/complete")]
+        [Authorize(Roles = "User, Admin")]
+        public async Task<ActionResult> CompleteTask(int id)
+        {
+            var existingTask = await _context.Tasks.FindAsync(id);
+            var currentUser = User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (existingTask == null) { return NotFound(); }
+            
+            if((string.Equals(existingTask.AssignedPerson, currentUser ,StringComparison.OrdinalIgnoreCase) || 
+                User.IsInRole("Admin")) && !existingTask.IsCompleted)
+            {
+                existingTask.IsCompleted = true;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+
+            return Forbid();
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteTask(int id)
@@ -78,6 +113,30 @@ namespace TaskFlow.API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        //Filter
+        [HttpGet("completed/{IsCompleted}")]
+        [Authorize]
+        public async Task<ActionResult<List<TaskItem>>> GetTaskByCompletedInfo(bool IsCompleted)
+        {
+            var tasks = await _context.Tasks.Where(t => t.IsCompleted == IsCompleted).ToListAsync();
+
+            if (!tasks.Any()) { return NotFound(); }
+
+            return Ok(tasks);
+        }
+
+        //Filter assignedPerson
+        [HttpGet("assignee/{AssignedPerson}")]
+        [Authorize]
+        public async Task<ActionResult<List<TaskItem>>> GetTaskByAssignee(string AssignedPerson)
+        {
+            var tasks = await _context.Tasks.Where(t => t.AssignedPerson == AssignedPerson).ToListAsync();
+
+            if (!tasks.Any()) { return NotFound(); }
+
+            return Ok(tasks);
         }
     }
 }
