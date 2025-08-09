@@ -21,7 +21,7 @@ namespace TaskFlow.API.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<List<TaskItem>>> GetTasks()
         {
             var tasks = await _context.Tasks.ToListAsync();
