@@ -1,11 +1,17 @@
 ﻿import React, { useState } from "react";
 import AuthService from "../services/AuthService";
+import { useNavigate } from 'react-router-dom';
 
-const AuthPage = () => {
+const LoginPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const navigate = useNavigate();
+
+    const handleGoToRegister = () => {
+        navigate('/register');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,10 +22,8 @@ const AuthPage = () => {
                 const res = await AuthService.login(username, password);
                 AuthService.saveToken(res.data.token);
                 setMessage("✅ Login is successfull! Token saved.");
-            } else {
-                await AuthService.register(username, password);
-                setMessage("✅ Register is successfull! Now you can login.");
                 setIsLogin(true);
+                navigate('/tasks'); 
             }
         } catch (err) {
             console.error(err);
@@ -32,7 +36,7 @@ const AuthPage = () => {
             maxWidth: "400px", margin: "50px auto", padding: "20px",
             border: "1px solid #ccc", borderRadius: "10px"
         }}>
-            <h2>{isLogin ? "Login" : "Register"}</h2>
+            <h2>{"Login"}</h2>
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
@@ -61,11 +65,11 @@ const AuthPage = () => {
                         borderRadius: "5px"
                     }}
                 >
-                    {isLogin ? "Login" : "Register"}
+                    {"Login"}
                 </button>
             </form>
             <p style={{ marginTop: "10px", cursor: "pointer", color: "blue" }}
-                onClick={() => setIsLogin(!isLogin)}>
+                onClick={ handleGoToRegister }>
                 {isLogin ? "You don't have an account? Register" : "You have an account? Login"}
             </p>
             {message && <p style={{ marginTop: "10px" }}>{message}</p>}
@@ -73,4 +77,4 @@ const AuthPage = () => {
     );
 };
 
-export default AuthPage;
+export default LoginPage;
