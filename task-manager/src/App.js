@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
-import TaskList from './pages/TaskLists';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TaskLists from './pages/TaskLists';
+import PrivateRoute from './components/PrivateRoute';
 function App() {
   return (
       <div className="App">
@@ -19,9 +19,11 @@ function App() {
 
                   { /* Register */}
                   <Route path="/register" element={<RegisterPage />} />
-
                   { /* TaskList */}
-                  <Route path="/tasks" element={<TaskLists />} />
+                  <Route element={<PrivateRoute />}>                      
+                      <Route path="/tasks" element={<TaskLists />} />
+                  </Route>
+
 
               </Routes>
           </BrowserRouter>
