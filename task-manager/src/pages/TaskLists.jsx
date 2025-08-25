@@ -1,6 +1,7 @@
 ﻿// src/pages/TaskList.jsx
 import React, { useEffect, useState } from 'react';
 import TaskService from '../api/TaskService';
+import { useNavigate } from 'react-router-dom';
 
 const TaskList = () => {
     const [tasks, setTasks] = useState([]);
@@ -18,6 +19,18 @@ const TaskList = () => {
             });
     }, []);
 
+    const navigate = useNavigate();
+
+
+    const handleLogout =  () => {
+        var existedToken = localStorage.getItem("token");
+        if (existedToken) {
+            localStorage.removeItem("token");
+            navigate('/login');
+        }
+        
+    };
+
     if (loading) return <div>Yükleniyor...</div>;
 
     return (
@@ -34,8 +47,25 @@ const TaskList = () => {
                     ))}
                 </ul>
             )}
+            <div>
+                <button onClick={handleLogout}
+                    type="button"
+                    style={{
+                        width: "100%",
+                        padding: "10px",
+                        background: "#4CAF50",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px"
+                    }}
+                >
+                    {"Logout"}
+                </button>
+            </div>
         </div>
     );
 };
 
 export default TaskList;
+
+

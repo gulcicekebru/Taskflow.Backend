@@ -23,8 +23,6 @@ function App() {
                   <Route element={<PrivateRoute />}>                      
                       <Route path="/tasks" element={<TaskLists />} />
                   </Route>
-
-
               </Routes>
           </BrowserRouter>
     </div>

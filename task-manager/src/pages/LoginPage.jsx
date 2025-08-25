@@ -54,7 +54,7 @@ const LoginPage = () => {
                     required
                     style={{ width: "95%", padding: "10px", marginBottom: "10px" }}
                 />
-                <button
+                <button 
                     type="submit"
                     style={{
                         width: "100%",
