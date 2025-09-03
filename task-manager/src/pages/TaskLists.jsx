@@ -42,7 +42,6 @@ const TaskList = () => {
     };
 
     const handleToggleTaskState = (id) => {
-        const taskToUpdate = tasks.find(t => t.id === id);
 
         TaskService.completeTask(id).then(res => {
             setTasks(tasks.map(task => task.id === id ? { ...task, isCompleted: !task.isCompleted} : task));
