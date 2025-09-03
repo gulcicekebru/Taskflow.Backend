@@ -11,7 +11,7 @@ const TaskList = () => {
     const [loading, setLoading] = useState(true);
     const [newTask, setNewTask] = useState("");
     const [deletingTaskID, deleteTask] = useState("");
-    const [changeState] = useState();
+
     
     
     const newTaskObj = {
