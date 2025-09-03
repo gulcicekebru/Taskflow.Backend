@@ -10,6 +10,9 @@ const TaskList = () => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newTask, setNewTask] = useState("");
+    const [deletingTaskID, deleteTask] = useState("");
+    const [changeState] = useState();
+    
     
     const newTaskObj = {
         title: newTask,
@@ -18,6 +21,7 @@ const TaskList = () => {
         assignedPerson : "",
         isCompleted: false
     };
+
    
     const handleAddTask = (e) => {
         e.preventDefault();
@@ -26,6 +30,28 @@ const TaskList = () => {
             setNewTask("");
         })
             .catch(err => console.error("Görev eklenemedi", err));
+    };
+
+    const handleDeleteTask = (e) => {
+        e.preventDefault();
+        TaskService.delete(deletingTaskID).then(res => {
+            setTasks(tasks.filter(task => task.id !== parseInt(deletingTaskID)));
+            deleteTask("");
+        })
+            .catch(err => console.error("Görev silinemedi", err));
+    };
+
+    const handleToggleTaskState = (id) => {
+        const taskToUpdate = tasks.find(t => t.id === id);
+        if (taskToUpdate.isCompleted) {
+            return;
+        }
+
+        TaskService.completeTask(id).then(res => {
+            setTasks(tasks.map(task => task.id === id ? { ...task, isCompleted: !task.isCompleted} : task));
+            
+        })
+            .catch(err => console.error("Görev durumu değiştirilemedi", err));
     };
 
     useEffect(() => {
@@ -79,6 +105,29 @@ const TaskList = () => {
                     {"Create"}
                 </button>
             </form>
+            <form onSubmit={handleDeleteTask}>
+                <input
+                    type="number"
+                    placeholder="Task ID"
+                    value={deletingTaskID}
+                    onChange={(e) => deleteTask(e.target.value)}
+                    required
+                    style={{ width: "95%", padding: "10px", marginBottom: "10px" }}
+                />
+                <button
+                    type="submit"
+                    style={{
+                        width: "100%",
+                        padding: "10px",
+                        background: "#4CAF50",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px"
+                    }}
+                >
+                    {"Delete"}
+                </button>
+            </form>
             <h2>Görev Listesi</h2>
             {tasks.length === 0 ? (
                 <p>Hiç görev yok.</p>
@@ -87,6 +136,19 @@ const TaskList = () => {
                     {tasks.map((task) => (
                         <li key={task.id}>
                             <strong>{task.title}</strong> - {task.isCompleted ? 'Tamamlandı' : 'Devam ediyor'}
+                            <button onClick={() => handleToggleTaskState(task.id)}
+                                type="button"
+                                style={{
+                                    width: "25%",
+                                    padding: "10px",
+                                    background: "#4CAF50",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "5px"
+                                }}
+                            >
+                                {"Update State"}
+                            </button>
                         </li>
                     ))}
                 </ul>

@@ -7,6 +7,7 @@ const TaskService = {
     create: (task) => axios.post('/Task', task),
     update: (id, task) => axios.put(`/Task/${id}`, task),
     delete: (id) => axios.delete(`/Task/${id}`),
+    completeTask: (id) => axios.put(`/Task/${id}/complete`)
 };
 
 export default TaskService;
