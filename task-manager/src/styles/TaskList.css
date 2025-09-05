@@ -1,0 +1,22 @@
+﻿label {
+    font-size: small;
+    display: block;
+    text-align: left;
+    color: #515050;
+    margin-left: 0px;
+    margin-bottom: 5px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.create-div {
+    width: 15%; /* genişliği ayarladın */
+    margin: 50px 10px; /* ortalamak için */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.headers{
+    text-align:left;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}

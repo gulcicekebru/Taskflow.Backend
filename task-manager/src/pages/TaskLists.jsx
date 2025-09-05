@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import TaskService from '../api/TaskService';
 import { useNavigate } from 'react-router-dom';
+import logo from "../assets/my-logo.png";
+import "../styles/Topnav.css";
+import "../styles/TaskList.css";
 
 
 
@@ -10,15 +13,18 @@ const TaskList = () => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newTask, setNewTask] = useState("");
+    const [description, setDescription] = useState("");
+    const [assignedPerson, setAssigneedPerson] = useState("");
     const [deletingTaskID, deleteTask] = useState("");
+    const [users, setUsers] = useState([]);
 
     
     
     const newTaskObj = {
         title: newTask,
-        description: "",
+        description: description,
         createdDate: new Date().toISOString(),
-        assignedPerson : "",
+        assignedPerson: assignedPerson,
         isCompleted: false
     };
 
@@ -28,6 +34,8 @@ const TaskList = () => {
         TaskService.create(newTaskObj).then(res => {
             setTasks([...tasks, res.data]);
             setNewTask("");
+            setDescription("");
+            setAssigneedPerson("");
         })
             .catch(err => console.error("Görev eklenemedi", err));
     };
@@ -60,7 +68,13 @@ const TaskList = () => {
                 console.error('Görevler alınamadı:', err);
                 setLoading(false);
             });
+        TaskService.getUsers()
+            .then(res => setUsers(res.data))
+            .catch(err => console.error("Kullanıcılar alınamadı", err));
     }, []);
+
+
+
 
     const navigate = useNavigate();
 
@@ -78,30 +92,134 @@ const TaskList = () => {
 
     return (
         <div>
-            <form onSubmit={handleAddTask}>
-                <input
-                    type="text"
-                    placeholder="Task Name"
-                    value={newTask}
-                    onChange={(e) => setNewTask(e.target.value)}
-                    required
-                    style={{ width: "95%", padding: "10px", marginBottom: "10px" }}
-                />
-                <button
-                    type="submit"
-                    style={{
-                        width: "100%",
-                        padding: "10px",
-                        background: "#4CAF50",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px"
-                    }}
-                >
-                    {"Create"}
-                </button>
-            </form>
+            <div className="topnav">
+                <a href="#home">Home</a>
+                <a className="active" href="#task">Tasks</a>
+            </div>
+            <div className="create-div">
+                <h2 className="headers">Create New Task</h2>
+                <form onSubmit={handleAddTask}>
+                    <label htmlFor="taskName">Task Name</label>
+                    <input
+                        type="text"
+                        placeholder="Enter task name"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        required
+                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
+                    />
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                        placeholder="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                        style={{
+                            width: "95%",
+                            padding: "10px",
+                            marginBottom: "10px",
+                            minHeight: "80px", 
+                            resize: "vertical"   
+                        }}
+                    />
+                    <label htmlFor="assignedPerson" >Assignee Person</label>
+                    <input
+                        type="text"
+                        placeholder="Enter assignee name"
+                        value={assignedPerson}
+                        onChange={(e) => setAssigneedPerson(e.target.value)}
+                        required
+                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
+                    />
+
+
+                    <button
+                        type="submit"
+                        style={{
+                            width: "95%",
+                            padding: "20px",
+                            background: "#4CAF50",
+                            color: "white",
+                            border: "1px solid black",
+                            borderRadius: "10px",
+                            marginBottom: "10px"
+                        }}
+                    >
+                        {"Create"}
+                    </button>
+                </form>
+            </div>
+
+            <div className="create-div">
+                <h2 className="headers">Filter Tasks</h2>
+                <form onSubmit={handleAddTask}>
+                    <label htmlFor="status">Status</label>
+                    <input
+                        type="text"
+                        placeholder="Enter status"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        required
+                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
+                    />
+                    <label htmlFor="assignee">Assigneee</label>
+                    <select id="assignee" className="w-full border p-2 mb-3">
+                        <option value="">All</option>
+                        {Array.isArray(users) &&
+                            users.map((user) =>
+                                user?.id && user?.username ? (
+                                    <option key={user.id} value={user.id}>
+                                        {user.username}
+                                    </option>
+                                ) : null
+                            )
+                        }
+                    </select>
+                    <label htmlFor="dueDate" >Due Date Range</label>
+                    <input
+                        type="text"
+                        placeholder="2024-07-01"
+                        value={assignedPerson}
+                        onChange={(e) => setAssigneedPerson(e.target.value)}
+                        required
+                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
+                    />
+
+
+                    <button
+                        type="submit"
+                        style={{
+                            width: "45%",
+                            padding: "20px",
+                            background: "white",
+                            color: "black",
+                            border: "1px solid black",
+                            borderRadius: "10px",
+                            marginBottom: "10px"
+                            
+                        }}
+                    >
+                        {"Apply Filters"}
+                    </button>
+                    <button
+                        type="submit"
+                        style={{
+                            width: "45%",
+                            padding: "20px",
+                            background: "white",
+                            color: "black",
+                            border: "1px solid black",
+                            borderRadius: "10px",
+                            marginBottom: "10px"
+                        }}
+                    >
+                        {"Clear Filters"}
+                    </button>
+                </form>
+            </div>
+            
             <form onSubmit={handleDeleteTask}>
+                <h2>Görev Silme</h2>
                 <input
                     type="number"
                     placeholder="Task ID"
@@ -113,12 +231,13 @@ const TaskList = () => {
                 <button
                     type="submit"
                     style={{
-                        width: "100%",
-                        padding: "10px",
+                        width: "95%",
+                        padding: "20px",
                         background: "#4CAF50",
                         color: "white",
                         border: "none",
-                        borderRadius: "5px"
+                        borderRadius: "5px",
+                        marginBottom: "10px"
                     }}
                 >
                     {"Delete"}
@@ -139,8 +258,9 @@ const TaskList = () => {
                                     padding: "10px",
                                     background: "#4CAF50",
                                     color: "white",
-                                    border: "none",
-                                    borderRadius: "5px"
+                                    border: "10",
+                                    borderRadius: "5px",
+                                    marginBottom: "10px"
                                 }}
                             >
                                 {"Update State"}

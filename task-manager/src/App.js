@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import Header from './components/Header';
 import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -6,9 +6,11 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TaskLists from './pages/TaskLists';
 import PrivateRoute from './components/PrivateRoute';
+
 function App() {
   return (
       <div className="App">
+          <Header />
           <BrowserRouter>
               <Routes>
                   {/* in openings route to /tasks page  */}
