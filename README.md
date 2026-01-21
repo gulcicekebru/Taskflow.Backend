@@ -20,3 +20,5 @@ I am building this project to:
 
 ## Status
 This project is under development and used as a learning and portfolio project.
+
+> This project is being developed step by step as part of my backend developer journey.
