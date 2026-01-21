@@ -97,6 +97,7 @@ const TaskList = () => {
                 <a className="active" href="#task">Tasks</a>
             </div>
             <div className="create-div">
+                <div className="filters-div">
                 <h2 className="headers">Create New Task</h2>
                 <form onSubmit={handleAddTask}>
                     <label htmlFor="taskName">Task Name</label>
@@ -150,7 +151,7 @@ const TaskList = () => {
                 </form>
             </div>
 
-            <div className="create-div">
+            <div className="create-div-child">
                 <h2 className="headers">Filter Tasks</h2>
                 <form onSubmit={handleAddTask}>
                     <label htmlFor="status">Status</label>
@@ -216,6 +217,7 @@ const TaskList = () => {
                         {"Clear Filters"}
                     </button>
                 </form>
+                </div>
             </div>
             
             <form onSubmit={handleDeleteTask}>
