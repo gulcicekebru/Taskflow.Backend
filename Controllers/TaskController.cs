@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TaskFlow.API.Models;
-using TaskFlow.API.Data;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using TaskFlow.API.Services;
+using System.Linq;
 using System.Security.Claims;
+using TaskFlow.API.Data;
+using TaskFlow.API.DTOs;
+using TaskFlow.API.Models;
+using TaskFlow.API.Services;
 
 namespace TaskFlow.API.Controllers
 {
@@ -53,12 +56,56 @@ namespace TaskFlow.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<TaskItem>> CreateTask([FromBody]TaskItem task)
+        public async Task<ActionResult<TaskItem>> CreateTask([FromBody]CreateTaskDto task)
         {
-            _context.Tasks.Add(task);
+            if (string.IsNullOrWhiteSpace(task.Title))
+            {
+                return BadRequest("Title can not be empty.");
+            }
+
+            List<int> ids = task.AssignedUserIds?.Distinct().ToList() ?? new();
+
+            if (ids.Any()) {
+                int userCount=0;
+                for (int i = 0; i < ids.Count; i++) {
+                    var id = ids[i];
+                    if(await _context.Users.AnyAsync(u => u.Id == id)) userCount++;
+
+                }
+                if (userCount != ids.Count)
+                {
+                    return BadRequest("One or more assigned users do not exist.");
+                }
+            }
+
+            TaskItem taskItem = new TaskItem();
+            taskItem.Title = task.Title;
+            taskItem.Description = task.Description;
+            taskItem.CreatedDate = DateTime.Now;
+            taskItem.IsCompleted = false;
+            taskItem.AssignedPerson = "";
+
+            _context.Tasks.Add(taskItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
+            
+            if(taskItem.Id != 0 ) {
+                DateTime assignedDate = DateTime.Now;
+                for (int i = 0; i < ids.Count; i++)
+                {
+                    TaskAssignment assignment = new TaskAssignment();
+                    assignment.TaskItemId = taskItem.Id;
+                    assignment.UserId = ids[i];
+                    assignment.AssignedDate = assignedDate;
+                    _context.TaskAssignments.Add(assignment);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+
+
+            return CreatedAtAction(nameof(GetTasks), new { id = taskItem.Id }, taskItem);
         }
 
         [HttpPut("id/{id}")]
