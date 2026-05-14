@@ -138,19 +138,36 @@ namespace TaskFlow.API.Controllers
         public async Task<ActionResult> CompleteTask(int id)
         {
             var existingTask = await _context.Tasks.FindAsync(id);
-            var currentUser = User.FindFirst(ClaimTypes.Name)?.Value;
 
             if (existingTask == null) { return NotFound(); }
-            
-            if((string.Equals(existingTask.AssignedPerson, currentUser ,StringComparison.OrdinalIgnoreCase) || 
-                User.IsInRole("Admin")) && !existingTask.IsCompleted)
+
+            if(existingTask.IsCompleted) { return BadRequest("Task is already completed."); }
+
+            var canComplete = User.IsInRole("Admin");
+
+            if (!canComplete)
             {
-                existingTask.IsCompleted = true;
-                await _context.SaveChangesAsync();
-                return NoContent();
+                var currentUser = User.FindFirst(ClaimTypes.Name)?.Value;
+
+                if (currentUser == null) { return Unauthorized(); }
+
+                var userId = await _context.Users.Where(t => t.Username == currentUser).Select(t => t.Id).SingleOrDefaultAsync();
+
+                if (userId == 0) { return Unauthorized(); }
+
+                canComplete = await _context.TaskAssignments.AnyAsync(t => t.TaskItemId == id && t.UserId == userId);
             }
 
-            return Forbid();
+            if (!canComplete)
+            {
+                return Forbid();
+            }
+
+            existingTask.IsCompleted = true;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+
         }
 
         [HttpDelete("{id}")]
