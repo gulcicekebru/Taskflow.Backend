@@ -36,7 +36,13 @@ namespace TaskFlow.API.Controllers
         public async Task<ActionResult<List<TaskItem>>> GetMyTasks()
         {
             var assignee = User.FindFirst(ClaimTypes.Name)?.Value;
-            var tasks = await _context.Tasks.Where(t=> t.AssignedPerson == assignee).ToListAsync();
+
+            var user = await _context.Users.Where(t => t.Username == assignee).FirstOrDefaultAsync();
+
+            if (user == null) { return Unauthorized(); }
+
+            var taskIds = await _context.TaskAssignments.Where(t => t.UserId == user.Id).Select(t=>t.TaskItemId).ToListAsync();
+            var tasks = await _context.Tasks.Where(t=> taskIds.Contains(t.Id)).ToListAsync();
 
             if (!tasks.Any()) { return NotFound(); }
 
