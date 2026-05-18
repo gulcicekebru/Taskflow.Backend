@@ -116,18 +116,43 @@ namespace TaskFlow.API.Controllers
 
         [HttpPut("id/{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> UpdateTask(int id, [FromBody] TaskItem updatedTask)
+        public async Task<ActionResult> UpdateTask(int id, UpdateTaskDto updatedTask)
         {
             var existingTask = await _context.Tasks.FindAsync(id);
 
             if (existingTask == null) { return NotFound(); }
 
+            if (string.IsNullOrWhiteSpace(updatedTask.Title))
+            {
+                return BadRequest("Title can not be empty.");
+            }
+
+            var newAssignedUsers = updatedTask.AssignedUserIds?.Distinct().ToList() ?? new();
+
+            for (int i = 0; i < newAssignedUsers.Count; i++)
+            {
+                if (!await _context.Users.AnyAsync(t => t.Id == newAssignedUsers[i]))
+                {
+                    return BadRequest("One or more user ids are invalid.");
+                }
+            }
+
             existingTask.Title = updatedTask.Title;
             existingTask.Description = updatedTask.Description;
-            existingTask.AssignedPerson = updatedTask.AssignedPerson;
-            existingTask.CreatedDate = updatedTask.CreatedDate;
             existingTask.IsCompleted = updatedTask.IsCompleted;
-           
+            var existingAssignments = await _context.TaskAssignments.Where(t => t.TaskItemId == id).ToListAsync();
+            _context.TaskAssignments.RemoveRange(existingAssignments);
+
+            var dateNow = DateTime.Now;
+            for (int i = 0; i < newAssignedUsers.Count; i++)
+            {
+                var newTaskAssignment = new TaskAssignment();
+                newTaskAssignment.TaskItemId = id;
+                newTaskAssignment.UserId = newAssignedUsers[i];
+                newTaskAssignment.AssignedDate = dateNow;
+                _context.TaskAssignments.Add(newTaskAssignment);
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();
