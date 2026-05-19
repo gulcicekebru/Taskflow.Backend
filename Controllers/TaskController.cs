@@ -223,15 +223,23 @@ namespace TaskFlow.API.Controllers
         }
 
         //Filter assignedPerson
-        [HttpGet("assignee/{AssignedPerson}")]
+        [HttpGet("assignee/{username}")]
         [Authorize]
-        public async Task<ActionResult<List<TaskItem>>> GetTaskByAssignee(string AssignedPerson)
+        public async Task<ActionResult<List<TaskItem>>> GetTaskByAssignee(string username)
         {
-            var tasks = await _context.Tasks.Where(t => t.AssignedPerson == AssignedPerson).ToListAsync();
+            var user =  await _context.Users.Where(t => t.Username == username).FirstOrDefaultAsync();
 
-            if (!tasks.Any()) { return NotFound(); }
+            if (user == null) { return NotFound(); }
 
-            return Ok(tasks);
+            var taskIds = await _context.TaskAssignments.Where(t => t.UserId == user.Id).Select(t => t.TaskItemId).ToListAsync();
+
+            if (!taskIds.Any()) { return NotFound(); }
+
+            var userTasks =  await _context.Tasks.Where(t => taskIds.Contains(t.Id)).ToListAsync();
+
+            if (!userTasks.Any()) { return NotFound(); }
+
+            return Ok(userTasks);
         }
     }
 }
