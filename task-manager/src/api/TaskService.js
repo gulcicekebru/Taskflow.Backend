@@ -8,7 +8,7 @@ const TaskService = {
     update: (id, task) => axios.put(`/Task/${id}`, task),
     delete: (id) => axios.delete(`/Task/${id}`),
     completeTask: (id) => axios.put(`/Task/${id}/complete`),
-    getByAssignee: (assignedPerson) => axios.get('Task/assignee/{AssignedPerson}'),
+    getByAssignee: (username) => axios.get(`/Task/assignee/${username}`),
     getUsers: () => axios.get(`/User/assignee`)
 };
 

@@ -14,18 +14,18 @@ const TaskList = () => {
     const [loading, setLoading] = useState(true);
     const [newTask, setNewTask] = useState("");
     const [description, setDescription] = useState("");
-    const [assignedPerson, setAssigneedPerson] = useState("");
+    const [assignedUserIds, setAssignedUserIds] = useState([]);
     const [deletingTaskID, deleteTask] = useState("");
     const [users, setUsers] = useState([]);
+    const [statusFilter, setStatusFilter] = useState("");
+    const [assigneeFilter, setAssigneeFilter] = useState("");
 
     
     
     const newTaskObj = {
         title: newTask,
         description: description,
-        createdDate: new Date().toISOString(),
-        assignedPerson: assignedPerson,
-        isCompleted: false
+        assignedUserIds: assignedUserIds
     };
 
    
@@ -35,9 +35,23 @@ const TaskList = () => {
             setTasks([...tasks, res.data]);
             setNewTask("");
             setDescription("");
-            setAssigneedPerson("");
+            setAssignedUserIds([]);
         })
             .catch(err => console.error("Görev eklenemedi", err));
+    };
+
+    const handleApplyFilters = (e) => {
+        e.preventDefault();
+
+        if (assigneeFilter) {
+            TaskService.getByAssignee(assigneeFilter)
+                .then(res => setTasks(res.data))
+                .catch(err => console.error("Filtre uygulanamadı", err));
+        } else {
+            TaskService.getAll()
+                .then(res => setTasks(res.data))
+                .catch(err => console.error("Görevler alınamadı", err));
+        }
     };
 
     const handleDeleteTask = (e) => {
@@ -114,7 +128,6 @@ const TaskList = () => {
                         placeholder="Description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        required
                         style={{
                             width: "95%",
                             padding: "10px",
@@ -123,16 +136,29 @@ const TaskList = () => {
                             resize: "vertical"   
                         }}
                     />
-                    <label htmlFor="assignedPerson" >Assignee Person</label>
-                    <input
-                        type="text"
-                        placeholder="Enter assignee name"
-                        value={assignedPerson}
-                        onChange={(e) => setAssigneedPerson(e.target.value)}
-                        required
-                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
-                    />
-
+                        <label htmlFor="assignedUserIds">Assignees</label>
+                        <select
+                            id="assignedUserIds"
+                            multiple
+                            value={assignedUserIds.map(String)}
+                            onChange={(e) => {
+                                const selectedIds = Array.from(
+                                    e.target.selectedOptions,
+                                    option => Number(option.value)
+                                );
+                                setAssignedUserIds(selectedIds);
+                            }}
+                            style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
+                        >
+                            {Array.isArray(users) &&
+                                users.map((user) =>
+                                    user?.id && user?.username ? (
+                                        <option key={user.id} value={user.id}>
+                                            {user.username}
+                                        </option>
+                                    ) : null
+                                )}
+                        </select>
 
                     <button
                         type="submit"
@@ -153,39 +179,29 @@ const TaskList = () => {
 
             <div className="create-div-child">
                 <h2 className="headers">Filter Tasks</h2>
-                <form onSubmit={handleAddTask}>
+                    <form onSubmit={handleApplyFilters}>
                     <label htmlFor="status">Status</label>
                     <input
                         type="text"
                         placeholder="Enter status"
-                        value={newTask}
-                        onChange={(e) => setNewTask(e.target.value)}
-                        required
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
                         style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
                     />
-                    <label htmlFor="assignee">Assigneee</label>
-                    <select id="assignee" className="w-full border p-2 mb-3">
+                        <label htmlFor="assignee">Assigneee</label>
+                        <select id="assignee" className="w-full border p-2 mb-3" value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)}
+                        >
                         <option value="">All</option>
                         {Array.isArray(users) &&
                             users.map((user) =>
                                 user?.id && user?.username ? (
-                                    <option key={user.id} value={user.id}>
+                                    <option key={user.id} value={user.username}>
                                         {user.username}
                                     </option>
                                 ) : null
                             )
                         }
                     </select>
-                    <label htmlFor="dueDate" >Due Date Range</label>
-                    <input
-                        type="text"
-                        placeholder="2024-07-01"
-                        value={assignedPerson}
-                        onChange={(e) => setAssigneedPerson(e.target.value)}
-                        required
-                        style={{ width: "95%", padding: "10px", marginBottom: "20px" }}
-                    />
-
 
                     <button
                         type="submit"

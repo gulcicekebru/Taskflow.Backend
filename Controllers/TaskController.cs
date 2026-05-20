@@ -89,7 +89,6 @@ namespace TaskFlow.API.Controllers
             taskItem.Description = task.Description;
             taskItem.CreatedDate = DateTime.Now;
             taskItem.IsCompleted = false;
-            taskItem.AssignedPerson = "";
 
             _context.Tasks.Add(taskItem);
             await _context.SaveChangesAsync();
